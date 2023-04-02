@@ -1,0 +1,2 @@
+include pyDeepLearn/tests/test_data/test_data.csv
+include pyDeepLearn/tests/test_data/inputlayer_zscore_truth.csv
