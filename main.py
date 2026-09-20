@@ -326,7 +326,7 @@ def run_project(args):
   Y_train = train_data[:, :20, 4:10]  # get first 3 cols of truth for x, y, and z
   # X_train = np.array([[[1],[2],[3]]])
   # Y_train = np.array([[[1],[2],[3]]])
-  print(f"X_train.shape { X_train[0].shape}")
+  print(f"X_train.shape {X_train[0].shape}")
 
   internal_nodes = X_train[0].shape[1] * 2
 

@@ -39,7 +39,7 @@ class CrossEntropy(objectiveFuncInterface):
     if y.ndim == 1:
       y = np.array([y])
     if y.ndim > 2:
-      logging.error(f"invalid input data matrix dimensions {y.ndim }")
+      logging.error(f"invalid input data matrix dimensions {y.ndim}")
       raise TypeError
     E = 0.0000001
     j = np.zeros((y.shape))

@@ -176,7 +176,7 @@ class TestRunUtilities(unittest.TestCase):
                           [2.0],
                           [3.0]
                           ]])
-      print(f"X_train.shape { X_train[0].shape}")
+      print(f"X_train.shape {X_train[0].shape}")
 
       U = FullyConnectedLayer(X_train[0].shape[1],
                               X_train[0].shape[1],

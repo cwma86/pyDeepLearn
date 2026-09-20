@@ -12,6 +12,14 @@
 # E121/E123/E124/E126/E127/E128/E131 - continuation line alignment
 extend-ignore = E111,E112,E113,E114,E117,E121,E123,E124,E126,E127,E128,E131
 
+# NOTE: E201/E202 (whitespace just inside "{" / "}") are only reported inside
+# f-strings by pycodestyle on Python 3.12+, where the tokenizer emits
+# FSTRING_START/FSTRING_MIDDLE/FSTRING_END tokens. On Python <= 3.11 an f-string
+# is a single STRING token and its contents are skipped entirely, so a local
+# environment built with an older interpreter reports no problem for
+# f"{ x }" while the CI lint job (which pins Python 3.12) fails. Reproduce the
+# CI result exactly with `uv run --python 3.12 flake8 .`.
+
 # 127 characters matches the GitHub editor width and the historical CI setting.
 max-line-length = 127
 

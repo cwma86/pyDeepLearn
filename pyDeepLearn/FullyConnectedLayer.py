@@ -149,17 +149,17 @@ class FullyConnectedLayer(Layer):
     if dataIn.ndim == 1:
       dataIn = np.array([dataIn])
     if dataIn.ndim > 2:
-      logging.error(f"invalid input data matrix dimensions {dataIn.ndim }")
+      logging.error(f"invalid input data matrix dimensions {dataIn.ndim}")
       raise TypeError
     self.setPrevIn(dataIn)
-    # print(f" dataIn { dataIn.shape}")
-    # print(f" self.weights { self.weights.shape}")
-    # print(f" self.bias { self.bias.shape}")
+    # print(f" dataIn {dataIn.shape}")
+    # print(f" self.weights {self.weights.shape}")
+    # print(f" self.bias {self.bias.shape}")
     try:
       h = dataIn @ self.weights + self.bias
     except RuntimeWarning:
       logging.info("Warn!")
-    # print(f" h  { h .shape}")
+    # print(f" h  {h.shape}")
     self.setPrevOut(h)
     return h
 

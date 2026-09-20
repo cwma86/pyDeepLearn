@@ -56,7 +56,7 @@ class SigmoidLayer(Layer):
     if dataIn.ndim == 1:
       dataIn = np.array([dataIn])
     if dataIn.ndim > 2:
-      logging.error(f"invalid input data matrix dimensions {dataIn.ndim }")
+      logging.error(f"invalid input data matrix dimensions {dataIn.ndim}")
       raise TypeError
     self.setPrevIn(dataIn)
     Y = 1/(1+np.exp(-dataIn))

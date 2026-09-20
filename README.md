@@ -86,6 +86,9 @@ version, the virtual environment, and all dependencies. There is no
 `requirements.txt`; dependencies are declared in `pyproject.toml` and pinned in
 `uv.lock`.
 
+pyDeepLearn itself requires Python 3.10 or newer. Python 3.8 and 3.9 reached
+end-of-life upstream, so they are no longer supported.
+
 1. Install uv:
 
    ```bash
@@ -225,7 +228,7 @@ Pages -> Build and deployment -> Source: GitHub Actions*.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `python-app.yml` | push / pull request to `main` | flake8, the unit test suite on Python 3.8-3.12, and `uv build`. |
+| `python-app.yml` | push / pull request to `main` | flake8, the unit test suite on Python 3.10-3.12, and `uv build`. |
 | `docs.yml` | push / pull request to `main` | builds the Sphinx HTML and publishes it to GitHub Pages from `main`. |
 | `release.yml` | push to `main`, or manual | cuts a semantic release (version stamp, changelog, tag, GitHub release). |
 
