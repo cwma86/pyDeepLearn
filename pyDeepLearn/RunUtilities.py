@@ -582,7 +582,7 @@ def RNN_predict(layers, X_data):
 
 def RNN_train(layers,
             X_train, Y_train,
-            X_test=np.array(None), Y_test=np.array(None),
+            X_test=None, Y_test=None,
             max_epoch=1000,
             error_exit=10e-10,
             plotname=None):
@@ -598,9 +598,11 @@ def RNN_train(layers,
       Training targets with shape ``(n_series, n_time_steps, n_outputs)``.
   X_test : numpy.ndarray, optional
       Test input data. When provided, the test objective is recorded each
-      epoch.
+      epoch. Defaults to ``None``, in which case no test objective is
+      recorded.
   Y_test : numpy.ndarray, optional
-      Test targets. Required when ``X_test`` is provided.
+      Test targets. Required when ``X_test`` is provided. Defaults to
+      ``None``.
   max_epoch : int, optional
       Maximum number of training epochs. Defaults to ``1000``.
   error_exit : float, optional
@@ -653,7 +655,7 @@ def RNN_train(layers,
 
     if fc_grad_index != -1:
       logging.warning("something went wrong this index should be -1")
-    if X_test.any() is not None and Y_test.any() is not None:
+    if X_test is not None and Y_test is not None:
       h_test = RNN_predict(layers, X_test)
       epoc_j_hist_test = []
       for i in range(h_test.shape[0]):
