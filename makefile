@@ -1,19 +1,34 @@
+# pyDeepLearn developer tasks
+#
+# This project uses uv (https://docs.astral.sh/uv/) to manage the Python
+# version, the virtual environment, and all dependencies. There is no
+# requirements.txt; dependencies live in pyproject.toml and are locked in
+# uv.lock.
 
 SHELL := /bin/bash
+
+# Build a wheel and sdist into dist/
 pkg:
-	@python setup.py bdist_wheel --universal
+	@uv build
 
+# Create/refresh the virtual environment and install all dependencies
+# (runtime plus the "dev" and "docs" dependency groups)
 env:
-	( \
-		python3 -m pip install virtualenv; \
-		mkdir -p python-venv; \
-		python3 -m venv python-venv; \
-		source python-venv/bin/activate; \
-		pip install -r requirements.txt; \
-	)
-	
-check:
-	@python3 -m unittest discover -s pyDeepLearn
+	@uv sync --all-groups
 
+# Run the unit test suite
+check:
+	@uv run python -m unittest discover -s pyDeepLearn
+
+# Lint with flake8
+lint:
+	@uv run flake8 .
+
+# Build the Sphinx API documentation into docs/_build/html
+docs:
+	@uv run --group docs sphinx-build -b html docs docs/_build/html
+
+# Remove build artifacts, the virtual environment, and caches
 clean:
-	@rm -rf build dist *.egg-info ./pyDeepLearn/__pycache__ ./pyDeepLearn/tests/__pycache__
+	@rm -rf build dist *.egg-info .venv docs/_build \
+		./pyDeepLearn/__pycache__ ./pyDeepLearn/tests/__pycache__

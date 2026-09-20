@@ -1,21 +1,36 @@
+"""Binary log loss (binary cross entropy) objective function."""
 import logging
 import numpy as np
 from pyDeepLearn.objectiveFuncInterface import objectiveFuncInterface
 
 class LogLoss(objectiveFuncInterface):
-  """
-    A class to represent a log loss objective function
-    ...
+  """Objective function computing binary cross entropy (log loss).
 
-    Methods
-    -------
-    eval(y, yhat):
-        evaluate the cross entropy of the provided data
-    gradient(y, yhat):
-        Method for calculating the gradient of the layer given its current
-        prev input and output data
+  The loss for a batch is the mean over the batch of
+
+  ``-sum(y * log(yhat + E) + (1 - y) * log(1 - yhat + E))``
+
+  where ``E`` is a small constant (``1e-8``) that keeps the logarithms finite.
+  The objective is intended for a binary target produced by a
+  :class:`~pyDeepLearn.SigmoidLayer.SigmoidLayer`.
   """
   def eval(self, y, yhat):
+    """Evaluate the mean binary cross entropy for a batch of predictions.
+
+    Parameters
+    ----------
+    y : numpy.ndarray
+        Binary ground truth / target values with shape
+        ``(n_samples, n_outputs)``.
+    yhat : numpy.ndarray
+        Predicted probabilities with the same shape as ``y``. Values should lie
+        within ``(0, 1)``.
+
+    Returns
+    -------
+    float
+        The mean binary cross entropy for the batch.
+    """
     E = 1e-8
     j = np.zeros(y.shape[0])
     for i in range(y.shape[0]):
@@ -24,6 +39,22 @@ class LogLoss(objectiveFuncInterface):
     return j
 
   def gradient(self, y, yhat):
+    """Return the derivative of the binary cross entropy with respect to ``yhat``.
+
+    Parameters
+    ----------
+    y : numpy.ndarray
+        Binary ground truth / target values with shape
+        ``(n_samples, n_outputs)``.
+    yhat : numpy.ndarray
+        Predicted probabilities with the same shape as ``y``.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``-(y - yhat) / (yhat * (1 - yhat) + E)``, with the same shape as
+        ``yhat``.
+    """
     E = 1e-8
     dj = -1 * (y - yhat) / (yhat*(1-yhat)+ E)
     return dj

@@ -1,36 +1,54 @@
+"""Layer applying the hyperbolic tangent (tanh) activation function."""
 import logging
 import numpy as np
 
 from pyDeepLearn.LayerInterface import Layer
 
 class TanhLayer(Layer):
-  """
-    A class to represent a Layer that provides a sigmoid modification to input
-    data and scales its values between the ranges of -1 and 1
-    ...
+  """Layer applying the hyperbolic tangent (tanh) activation function.
 
-    Attributes
-    ----------
-    __prevIn : numpy matrix
-        previously input data to the layer
-    __prevOut : numpy matrix
-        previously output data from the layer
+  Each element is transformed as
+  ``Y = (exp(X) - exp(-X)) / (exp(X) + exp(-X))``, squashing the output into the
+  range ``(-1, 1)``.
 
-
-    Methods
-    -------
-    forward():
-        Method for back propagation of layer
-    gradient():
-        Method for calculating the gradient of the layer given its current
-        prev input and output data
-    backward():
-        Method for back propagation of layer
+  Attributes
+  ----------
+  __prevIn : numpy.ndarray
+      Input data supplied during the most recent forward pass.
+  __prevOut : numpy.ndarray
+      Output data produced during the most recent forward pass.
   """
   def __init__(self, dataIn):
+    """Initialize the layer.
+
+    Parameters
+    ----------
+    dataIn : numpy.ndarray
+        Accepted for interface consistency with the other activation layers;
+        the value is not used.
+    """
     super().__init__()
 
   def forward(self, dataIn):
+    """Apply the tanh activation to ``dataIn``.
+
+    Parameters
+    ----------
+    dataIn : numpy.ndarray
+        Input data with shape ``(n_samples, n_features)``. A 1-D array is
+        promoted to a single-row 2-D array.
+
+    Returns
+    -------
+    numpy.ndarray
+        The element-wise hyperbolic tangent of ``dataIn``, with the same shape
+        as ``dataIn``.
+
+    Raises
+    ------
+    TypeError
+        If ``dataIn`` has more than two dimensions.
+    """
     if dataIn.ndim == 1:
       dataIn = np.array([dataIn])
     if dataIn.ndim > 2:
@@ -44,6 +62,15 @@ class TanhLayer(Layer):
     return Y
 
   def gradient(self):
+    """Return the per-observation Jacobian of the tanh activation.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array with shape ``(n_samples, n_features, n_features)`` whose diagonal
+        entries are ``1 - y**2`` (plus a small epsilon for numerical stability),
+        where ``y`` is the corresponding output.
+    """
     dj = np.zeros((self.getPrevOut().shape[0],
                    self.getPrevOut().shape[1],
                    self.getPrevOut().shape[1]))

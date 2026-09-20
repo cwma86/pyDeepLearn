@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyDeepLearn"
+version = "1.0"
+description = "A from-scratch NumPy deep learning framework built to investigate the inner workings of ML frameworks"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Cory W. Mauer", email = "cwm63@drexel.edu" },
+]
+keywords = [
+    "deep-learning",
+    "machine-learning",
+    "neural-network",
+    "numpy",
+    "education",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.22.1",
+    "matplotlib>=3.5.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/cwma86/pyDeepLearn"
+Repository = "https://github.com/cwma86/pyDeepLearn.git"
+Issues = "https://github.com/cwma86/pyDeepLearn/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "flake8>=4.0",
+]
+docs = [
+    "sphinx>=5.0",
+    "sphinx-rtd-theme>=1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pyDeepLearn"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/pyDeepLearn",
+    "/main.py",
+    "/README.md",
+    "/LICENSE",
+    "/makefile",
+    "/docs",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["pyDeepLearn"]

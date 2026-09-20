@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+"""Command line entry point that demonstrates the pyDeepLearn framework.
+
+The script provides three demonstrations, all driven by command line
+arguments:
+
+* :func:`linear_reg_test1` -- trains a small network to smooth noisy position
+  measurements from a single track.
+* :func:`linear_reg_test2` -- trains on one track and evaluates on a second,
+  different track.
+* :func:`run_project` -- trains a recurrent network over many tracks to reduce
+  measurement noise for a target moving at constant velocity.
+
+Run ``python main.py --help`` to see the available arguments.
+"""
 import argparse
 import logging
 import math
@@ -26,6 +40,14 @@ logging.basicConfig(
 
 
 def arg_parsing():
+  """Parse the command line arguments for the demonstration script.
+
+  Returns
+  -------
+  argparse.Namespace
+      Parsed arguments with the attributes ``filepath1``, ``filepath2``,
+      ``datadir``, ``verbose``, ``showplot``, and ``weights``.
+  """
   parser = argparse.ArgumentParser(description='Run script for CS 615 HW4\n')
   parser.add_argument('-f1','--filepath1', type=str, default="",
                       help="file path to csv input data")
@@ -48,16 +70,60 @@ def arg_parsing():
   return args
 
 def calc_RMSE(y, y_hat):
+  """Compute the root mean squared error between two arrays.
+
+  Parameters
+  ----------
+  y : numpy.ndarray
+      Reference / ground truth values.
+  y_hat : numpy.ndarray
+      Predicted values with the same shape as ``y``.
+
+  Returns
+  -------
+  float
+      The root mean squared error.
+  """
   return np.sqrt(((y - y_hat) ** 2).mean()) 
 
 def calc_MAPE(y, y_hat):
+  """Compute the mean absolute percentage error between two arrays.
+
+  Parameters
+  ----------
+  y : numpy.ndarray
+      Reference / ground truth values (must be non-zero to avoid dividing by
+      zero).
+  y_hat : numpy.ndarray
+      Predicted values with the same shape as ``y``.
+
+  Returns
+  -------
+  float
+      The mean absolute percentage error expressed as a fraction.
+  """
   return np.mean(np.abs((y - y_hat) / y))
 
 def linear_reg_test1(args):
-  """Initial test
-      Create an ANN to Run linear regression on a subset of a single track to determine if 
-      we are able to improve measurement accuracy by using our model to reduce
-      the noise of a measurment for a target moving at constant velocity"""
+  """Train a small network to smooth noisy measurements from one track.
+
+  The data is split into train and test partitions, a feed-forward network is
+  trained with :func:`pyDeepLearn.RunUtilities.run_plot_epoch_J`, and the RMSE
+  of the predictions is compared against the raw measurements to show whether
+  the model reduces measurement noise for a target moving at constant velocity.
+
+  Parameters
+  ----------
+  args : argparse.Namespace
+      Parsed command line arguments. ``args.filepath1`` must point to a CSV
+      file containing ``time, x, y, z`` measurements followed by the true
+      ``x, y, z`` position.
+
+  Returns
+  -------
+  None
+      Results are logged and plots are produced as a side effect.
+  """
   logging.info("Running main project linear_reg_test1")
   # Valid the input args
   if not os.path.isfile(args.filepath1):
@@ -121,10 +187,23 @@ def linear_reg_test1(args):
   logging.info(f"measured rmse: {rmse}")
 
 def linear_reg_test2(args):
-  """Initial test
-      Create an ANN to Run linear regression on a single track to determine if 
-      we are able to improve measurement accuracy of a second track with different
-      direction and velocity"""
+  """Train on one track and evaluate on a second, different track.
+
+  Demonstrates that the linear-regression approach depends on learning a
+  track's velocity: the network is trained on ``args.filepath1`` and evaluated
+  on ``args.filepath2``, which has a different direction and velocity.
+
+  Parameters
+  ----------
+  args : argparse.Namespace
+      Parsed command line arguments. ``args.filepath1`` supplies the training
+      track and ``args.filepath2`` the test track.
+
+  Returns
+  -------
+  None
+      Results are logged and plots are produced as a side effect.
+  """
   logging.info("Running main project linear_reg_test2")
   # Valid the input args
   if not os.path.isfile(args.filepath1):
@@ -192,7 +271,25 @@ def linear_reg_test2(args):
   logging.info(f"measured rmse: {rmse}")
 
 def run_project(args):
-  """This is the actual project code"""
+  """Train a recurrent network to reduce measurement noise across many tracks.
+
+  Loads 500 tracks for training and 200 for testing from ``args.datadir`` (each
+  truncated to 20 time steps), builds a recurrent network, and trains it with
+  :func:`pyDeepLearn.RunUtilities.RNN_train`. Predicted positions are then
+  compared against the true and measured positions using RMSE.
+
+  Parameters
+  ----------
+  args : argparse.Namespace
+      Parsed command line arguments. ``args.datadir`` must point to a directory
+      of track CSV files; ``args.weights`` selects whether to reuse saved
+      weights instead of training the network.
+
+  Returns
+  -------
+  None
+      Results are logged and plots are produced as a side effect.
+  """
   # Valid the input args
   if not os.path.isdir(args.datadir):
     logging.warning(f"provide datadir path  is invalid {args.datadir}")

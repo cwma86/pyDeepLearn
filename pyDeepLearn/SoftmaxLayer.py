@@ -1,37 +1,57 @@
+"""Layer applying the softmax activation function."""
 import logging
 import math
 import numpy as np
 from pyDeepLearn.LayerInterface import Layer
 
 class SoftmaxLayer(Layer):
-  """
-    A class to represent a Layer that provides a softmax modification to the
-    input data which scales the data to a probability distribution [0,1]
-    ...
+  """Layer applying the softmax activation function.
 
-    Attributes
-    ----------
-    __prevIn : numpy matrix
-        previously input data to the layer
-    __prevOut : numpy matrix
-        previously output data from the layer
+  Each row of the input is exponentiated and normalized so that it sums to one,
+  turning a vector of real-valued scores into a probability distribution over
+  ``(0, 1)``. It is typically the final layer before a
+  :class:`~pyDeepLearn.CrossEntropy.CrossEntropy` objective for multi-class
+  classification.
 
-
-    Methods
-    -------
-    forward():
-        Method for back propagation of layer
-    gradient():
-        Method for calculating the gradient of the layer given its current
-        prev input and output data
-    backward():
-        Method for back propagation of layer
+  Attributes
+  ----------
+  __prevIn : numpy.ndarray
+      Input data supplied during the most recent forward pass.
+  __prevOut : numpy.ndarray
+      Output data produced during the most recent forward pass.
   """
   def __init__(self, dataIn):
+    """Initialize the layer.
+
+    Parameters
+    ----------
+    dataIn : numpy.ndarray
+        Accepted for interface consistency with the other activation layers;
+        the value is not used.
+    """
     super().__init__()
 
 
   def forward(self, dataIn):
+    """Apply the softmax activation to each row of ``dataIn``.
+
+    Parameters
+    ----------
+    dataIn : numpy.ndarray
+        Input data with shape ``(n_samples, n_features)``. A 1-D array is
+        promoted to a single-row 2-D array.
+
+    Returns
+    -------
+    numpy.ndarray
+        A probability distribution for each row, with the same shape as
+        ``dataIn``. Each row sums to one.
+
+    Raises
+    ------
+    TypeError
+        If ``dataIn`` has more than two dimensions.
+    """
     # Input data validation checks
     if dataIn.ndim == 1:
       dataIn = np.array([dataIn])
@@ -59,6 +79,15 @@ class SoftmaxLayer(Layer):
 
 
   def gradient(self):
+    """Return the per-observation Jacobian of the softmax activation.
+
+    Returns
+    -------
+    numpy.ndarray
+        Array with shape ``(n_samples, n_features, n_features)``. Diagonal
+        entries are ``y_i * (1 - y_i)`` and off-diagonal entries are
+        ``-y_i * y_j``, where ``y`` is the corresponding softmax output row.
+    """
     dk = np.zeros((self.getPrevOut().shape[0],
                    self.getPrevOut().shape[1],
                    self.getPrevOut().shape[1]))

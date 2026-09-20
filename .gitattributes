@@ -1,0 +1,11 @@
+# Normalize line endings for text files so that Windows checkouts (CRLF) and
+# Unix checkouts (LF) compare cleanly and Git diffs stay minimal.
+* text=auto
+
+# Windows batch/command scripts should always be checked out with CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets should never be line-ending converted.
+*.png binary
+*.pdf binary
