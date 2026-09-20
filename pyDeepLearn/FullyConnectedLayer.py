@@ -5,11 +5,11 @@ and bias. ``RecurrentFcLayer`` specializes it for use with the recurrent
 training helpers in :mod:`pyDeepLearn.RunUtilities`.
 """
 import logging
-import math
 import numpy as np
 import sys
 
 from pyDeepLearn.LayerInterface import Layer
+
 
 class FullyConnectedLayer(Layer):
   """A fully connected (dense) layer that changes data dimensionality.
@@ -21,8 +21,9 @@ class FullyConnectedLayer(Layer):
   (:meth:`reccurentWeightUpdate`), or the Adam optimizer
   (:meth:`adam_weight_update`).
   """
-  def __init__(self, sizeIn, sizeOut, 
-               weight=None, bias=None, 
+
+  def __init__(self, sizeIn, sizeOut,
+               weight=None, bias=None,
                weight_up_func="updateWeights",
                eta=0.001):
     """Initialize the layer's weights, bias, and optimizer settings.
@@ -64,13 +65,13 @@ class FullyConnectedLayer(Layer):
 
     w_size = [sizeIn, sizeOut]
     self.setPrevIn(np.zeros(sizeIn))
-    self.setPrevOut(np.zeros((1,sizeOut)))
+    self.setPrevOut(np.zeros((1, sizeOut)))
     self.eta = eta
-    if weight == None:
+    if weight is None:
       self.weights = np.random.uniform(-0.0001, 0.0001, size=w_size)
     else:
       self.weights = np.random.uniform(weight[0], weight[1], size=w_size)
-    if bias == None:
+    if bias is None:
       self.bias = np.random.uniform(-0.0001, 0.0001, size=sizeOut)
     else:
       self.bias = np.random.uniform(bias[0], bias[1], size=sizeOut)
@@ -78,13 +79,13 @@ class FullyConnectedLayer(Layer):
     if weight_up_func == "adam_weight_update":
       self.s = 0
       self.r = 0
-      self.p1=0.9
-      self.p2=0.999
-      self.sig=10e-8
+      self.p1 = 0.9
+      self.p2 = 0.999
+      self.sig = 10e-8
       self.weight_up_func = self.adam_weight_update
     else:
       self.weight_up_func = self.updateWeights
-    self.epoch = 0 
+    self.epoch = 0
 
   def getWeights(self):
     """Return the layer's weight matrix.
@@ -105,7 +106,7 @@ class FullyConnectedLayer(Layer):
         New weight matrix with shape ``(sizeIn, sizeOut)``.
     """
     self.weights = weights
-  
+
   def getBias(self):
     """Return the layer's bias vector.
 
@@ -115,7 +116,7 @@ class FullyConnectedLayer(Layer):
         Bias vector with shape ``(sizeOut,)``.
     """
     return self.bias
-  
+
   def setBias(self, bias):
     """Replace the layer's bias vector.
 
@@ -157,7 +158,7 @@ class FullyConnectedLayer(Layer):
     try:
       h = dataIn @ self.weights + self.bias
     except RuntimeWarning:
-      logging.info(f"Warn!")
+      logging.info("Warn!")
     # print(f" h  { h .shape}")
     self.setPrevOut(h)
     return h
@@ -182,7 +183,7 @@ class FullyConnectedLayer(Layer):
       print(self.getWeights())
       sys.exit(1)
     return dj
-  
+
   def updateWeights(self, gradIn, epoch=1):
     """Apply a gradient-descent update to the weights and bias.
 
@@ -200,14 +201,14 @@ class FullyConnectedLayer(Layer):
     The weights are updated with ``dJ/dW = prevIn.T @ gradIn / n_samples`` and
     the bias with ``dJ/db = sum(gradIn, axis=0) / n_samples``.
     """
-    dJdw= (self.getPrevIn().T @ gradIn)/gradIn.shape[0]
+    dJdw = (self.getPrevIn().T @ gradIn)/gradIn.shape[0]
     self.weights = self.weights - self.eta * dJdw
-    
+
     # add jitter after so many epochs
     if epoch % 10 == 0:
       self.weights = self.weights * 0.999
-      
-    dJdb = np.sum(gradIn, axis = 0)/gradIn.shape[0]
+
+    dJdb = np.sum(gradIn, axis=0)/gradIn.shape[0]
     self.bias = self.bias - self.eta * dJdb
 
   def reccurentWeightUpdate(self, djdw, djdb):
@@ -238,7 +239,6 @@ class FullyConnectedLayer(Layer):
       self.epoch = 1
     self.epoch += 1
 
-
     # TODO not really sure what to do with the bias here...
     self.bias = self.bias - self.eta * djdb
 
@@ -259,14 +259,15 @@ class FullyConnectedLayer(Layer):
         Current training epoch, used for the bias-correction terms. Defaults
         to ``1``.
     """
-    self.s = self.p1 * self.s + ((1-self.p1) * np.sum( gradIn, axis=0)/gradIn.shape[0])
+    self.s = self.p1 * self.s + ((1-self.p1) * np.sum(gradIn, axis=0)/gradIn.shape[0])
     self.r = self.p2 * self.r + ((1-self.p2) * np.sum((gradIn * gradIn), axis=0)/gradIn.shape[0])
 
     temp_s = self.s/(1-self.p1**epoch)
     temp_r = self.r/(1-self.p2**epoch)
-    self.weights = self.weights - self.eta *(temp_s/(np.sqrt(temp_r)+self.sig))
-    dJdb = np.sum(gradIn, axis = 0)/gradIn.shape[0]
+    self.weights = self.weights - self.eta * (temp_s/(np.sqrt(temp_r)+self.sig))
+    dJdb = np.sum(gradIn, axis=0)/gradIn.shape[0]
     self.bias = self.bias - self.eta * dJdb
+
 
 class RecurrentFcLayer(FullyConnectedLayer):
   """A fully connected layer with recurrent (across-time) state.
@@ -278,8 +279,9 @@ class RecurrentFcLayer(FullyConnectedLayer):
   its weights are updated from gradients accumulated across the sequence via
   :meth:`FullyConnectedLayer.reccurentWeightUpdate`.
   """
-  def __init__(self, sizeIn, sizeOut, 
-               weight=None, bias=None, 
+
+  def __init__(self, sizeIn, sizeOut,
+               weight=None, bias=None,
                weight_up_func="updateWeights",
                eta=0.001):
     """Initialize the recurrent fully connected layer.
@@ -299,7 +301,7 @@ class RecurrentFcLayer(FullyConnectedLayer):
     eta : float, optional
         Learning rate. Defaults to ``0.001``.
     """
-    super().__init__( sizeIn=sizeIn, sizeOut=sizeOut, 
-               weight=weight, bias=bias, 
+    super().__init__(sizeIn=sizeIn, sizeOut=sizeOut,
+               weight=weight, bias=bias,
                weight_up_func=weight_up_func,
                eta=eta)

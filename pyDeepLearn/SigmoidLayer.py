@@ -3,6 +3,8 @@ import logging
 import numpy as np
 
 from pyDeepLearn.LayerInterface import Layer
+
+
 class SigmoidLayer(Layer):
   """Layer applying the logistic (sigmoid) activation function.
 
@@ -18,6 +20,7 @@ class SigmoidLayer(Layer):
   __prevOut : numpy.ndarray
       Output data produced during the most recent forward pass.
   """
+
   def __init__(self, dataIn):
     """Initialize the layer.
 
@@ -28,7 +31,6 @@ class SigmoidLayer(Layer):
         the value is not used.
     """
     super().__init__()
-
 
   def forward(self, dataIn):
     """Apply the sigmoid activation to ``dataIn``.
@@ -70,7 +72,6 @@ class SigmoidLayer(Layer):
         Array with shape ``(n_samples, n_features, n_features)`` whose diagonal
         entries are ``y * (1 - y)``, where ``y`` is the corresponding output.
     """
-    E = 0.00000001
     dj = np.zeros((self.getPrevOut().shape[0],
                    self.getPrevOut().shape[1],
                    self.getPrevOut().shape[1]))

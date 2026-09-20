@@ -8,6 +8,7 @@ import logging
 import math
 import numpy as np
 
+
 class InputLayer(Layer):
   """Layer that standardizes (z-score normalizes) its input data.
 
@@ -29,6 +30,7 @@ class InputLayer(Layer):
   -----
   :meth:`gradient` is not implemented for this layer.
   """
+
   def __init__(self, dataIn):
     """Capture the per-feature mean and standard deviation of ``dataIn``.
 
@@ -38,9 +40,9 @@ class InputLayer(Layer):
         Training data with shape ``(n_samples, n_features)`` used to compute
         the normalization statistics.
     """
-    self.meanX = np.mean(dataIn,axis=0)
+    self.meanX = np.mean(dataIn, axis=0)
     # Note using DDOF = 1
-    self.stdX = np.std(dataIn,axis=0,ddof=1)
+    self.stdX = np.std(dataIn, axis=0, ddof=1)
     min_stddev = np.amin(self.stdX)
     if math.isclose(min_stddev, 0.0):
       for i in range(len(self.stdX)):
@@ -77,5 +79,5 @@ class InputLayer(Layer):
     -----
     Not yet implemented; returns ``None``.
     """
-    #TODO not yet implemented
+    # TODO not yet implemented
     pass

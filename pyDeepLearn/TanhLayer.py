@@ -4,6 +4,7 @@ import numpy as np
 
 from pyDeepLearn.LayerInterface import Layer
 
+
 class TanhLayer(Layer):
   """Layer applying the hyperbolic tangent (tanh) activation function.
 
@@ -18,6 +19,7 @@ class TanhLayer(Layer):
   __prevOut : numpy.ndarray
       Output data produced during the most recent forward pass.
   """
+
   def __init__(self, dataIn):
     """Initialize the layer.
 

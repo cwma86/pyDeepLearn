@@ -1,0 +1,21 @@
+# flake8 configuration, shared by `make lint`, the CI lint job in
+# .github/workflows/python-app.yml, and editor integrations.
+#
+#   make lint          # uv run flake8 .
+#
+# This code base deliberately uses a two-space indent and a "visual indent"
+# style for wrapped call arguments. The pycodestyle rules that assume a
+# four-space indent therefore report thousands of findings on correct code, so
+# they are disabled rather than used to reformat every module.
+[flake8]
+# E111/E112/E113/E114/E117 - indentation is not a multiple of four
+# E121/E123/E124/E126/E127/E128/E131 - continuation line alignment
+extend-ignore = E111,E112,E113,E114,E117,E121,E123,E124,E126,E127,E128,E131
+
+# 127 characters matches the GitHub editor width and the historical CI setting.
+max-line-length = 127
+
+# `uv sync` creates a .venv inside the project and flake8's default exclude list
+# does not cover it, so a bare `flake8 .` would otherwise lint every installed
+# dependency (tens of thousands of findings).
+extend-exclude = .venv,.pytest_cache,__pycache__,build,dist,docs/_build

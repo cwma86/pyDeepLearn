@@ -1,5 +1,9 @@
-# This workflow installs Python dependencies with uv, then runs the test suite
-# and lints with flake8.
+# Continuous integration: installs the locked dependencies with uv, lints with
+# flake8, runs the unit test suite on every supported Python version, and
+# verifies that the wheel/sdist can be built.
+#
+# Documentation is built and published by .github/workflows/docs.yml, and
+# releases are cut by .github/workflows/release.yml.
 # For more information see: https://docs.astral.sh/uv/guides/integration/github/
 
 name: Python application
@@ -9,12 +13,17 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  lint:
 
     runs-on: ubuntu-latest
 
@@ -24,15 +33,58 @@ jobs:
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
-    - name: Set up Python
-      run: uv python install 3.10
+        python-version: "3.12"
     - name: Install dependencies
       run: uv sync --all-groups
     - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        uv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        uv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      # Configuration (127 character lines, the package's two-space indent
+      # style, and .venv/dist/docs/_build excluded) lives in .flake8.
+      # This step must stay clean.
+      run: uv run flake8 .
+    - name: Report cyclomatic complexity
+      # Advisory only: functions with a complexity above 10 are reported to the
+      # log but never fail the build.
+      run: uv run flake8 . --max-complexity=10 --exit-zero --statistics
+
+  test:
+
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      # Report the result of every interpreter instead of stopping at the first
+      # failure.
+      fail-fast: false
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: uv sync --all-groups
     - name: Test with unittest
       run: uv run python -m unittest discover -s pyDeepLearn
+
+  package:
+
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        python-version: "3.12"
+    - name: Build the wheel and sdist
+      run: uv build
+    - name: Upload the distributions
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/

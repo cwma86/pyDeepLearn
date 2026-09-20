@@ -3,6 +3,7 @@ from pyDeepLearn.LayerInterface import Layer
 import logging
 import numpy as np
 
+
 class ReLuLayer(Layer):
   """Layer applying the rectified linear (ReLU) activation function.
 
@@ -16,6 +17,7 @@ class ReLuLayer(Layer):
   __prevOut : numpy.ndarray
       Output data produced during the most recent forward pass.
   """
+
   def __init__(self, dataIn):
     """Initialize the layer.
 
@@ -26,7 +28,6 @@ class ReLuLayer(Layer):
         the value is not used.
     """
     super().__init__()
-
 
   def forward(self, dataIn):
     """Apply the ReLU activation to ``dataIn``.
@@ -79,9 +80,9 @@ class ReLuLayer(Layer):
       for i in range(self.getPrevOut().shape[1]):
         for j in range(self.getPrevOut().shape[1]):
           if i == j:
-            if self.getPrevIn()[k][j] < 0 :
+            if self.getPrevIn()[k][j] < 0:
               dj[k][i][j] = 0
-            else :
+            else:
               dj[k][i][j] = 1
 
     return dj

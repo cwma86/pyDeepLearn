@@ -1,7 +1,7 @@
 """Binary log loss (binary cross entropy) objective function."""
-import logging
 import numpy as np
 from pyDeepLearn.objectiveFuncInterface import objectiveFuncInterface
+
 
 class LogLoss(objectiveFuncInterface):
   """Objective function computing binary cross entropy (log loss).
@@ -14,6 +14,7 @@ class LogLoss(objectiveFuncInterface):
   The objective is intended for a binary target produced by a
   :class:`~pyDeepLearn.SigmoidLayer.SigmoidLayer`.
   """
+
   def eval(self, y, yhat):
     """Evaluate the mean binary cross entropy for a batch of predictions.
 
@@ -34,7 +35,7 @@ class LogLoss(objectiveFuncInterface):
     E = 1e-8
     j = np.zeros(y.shape[0])
     for i in range(y.shape[0]):
-      j[i] = np.sum(-((y[i]*np.log(yhat[i] + E) +  (1-y[i]) * np.log(1-yhat[i] + E))),0)/y[i].shape[0]
+      j[i] = np.sum(-((y[i]*np.log(yhat[i] + E) + (1-y[i]) * np.log(1-yhat[i] + E))), 0)/y[i].shape[0]
     j = np.mean(j)
     return j
 
@@ -56,5 +57,5 @@ class LogLoss(objectiveFuncInterface):
         ``yhat``.
     """
     E = 1e-8
-    dj = -1 * (y - yhat) / (yhat*(1-yhat)+ E)
+    dj = -1 * (y - yhat) / (yhat*(1-yhat) + E)
     return dj

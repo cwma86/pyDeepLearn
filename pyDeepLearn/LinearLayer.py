@@ -4,6 +4,7 @@ import numpy as np
 
 from pyDeepLearn.LayerInterface import Layer
 
+
 class LinearLayer(Layer):
   """Layer that passes its input through unchanged.
 
@@ -23,7 +24,6 @@ class LinearLayer(Layer):
   def __init__(self):
     """Initialize the layer. The layer has no tunable parameters."""
     super().__init__()
-
 
   def forward(self, dataIn):
     """Return ``dataIn`` unchanged, caching it as the previous input/output.
@@ -66,7 +66,7 @@ class LinearLayer(Layer):
     """
     dj = np.zeros((self.getPrevOut().shape[0],
                    self.getPrevOut().shape[1],
-                   self.getPrevOut().shape[1]))    
+                   self.getPrevOut().shape[1]))
     for k in range(self.getPrevOut().shape[0]):
       for i in range(self.getPrevOut().shape[1]):
         for j in range(self.getPrevOut().shape[1]):

@@ -50,7 +50,7 @@ def test_train_split(input_data, test_percent=.33, shuffle=True):
   test_size = round(len(input_data)*test_percent)
   test = input_data[:test_size, :]
   train = input_data[test_size:, :]
-  return train, test 
+  return train, test
 
 
 def forward_layers(layers, x):
@@ -73,6 +73,7 @@ def forward_layers(layers, x):
   for i in range(len(layers)-1):
     h = layers[i].forward(h)
   return h
+
 
 def forward_calc_error(layers, x, y, error_data=[], j=0):
   """Forward propagate ``x`` and append the objective value to ``error_data``.
@@ -104,6 +105,7 @@ def forward_calc_error(layers, x, y, error_data=[], j=0):
                     'obj_func': layers[-1].eval(y, h)})
   return error_data
 
+
 def backward_layers(layers, x, y, epoch=0):
   """Back propagate the objective gradient and update each layer's weights.
 
@@ -128,17 +130,18 @@ def backward_layers(layers, x, y, epoch=0):
   gradient the process exits.
   """
   grad = layers[-1].gradient(y, x)
-  for i in range(len(layers)-2,0,-1):
+  for i in range(len(layers)-2, 0, -1):
     newgrad = layers[i].backward(grad)
-    if(isinstance(layers[i], FullyConnectedLayer)):
+    if (isinstance(layers[i], FullyConnectedLayer)):
       array_sum = np.sum(grad)
       if np.isnan(array_sum):
         logging.error(f"gradient is nan for layer: {i}")
         sys.exit(1)
       layers[i].weight_up_func(grad, epoch=epoch)
-    grad = newgrad 
-  
-def run_layers(layers, 
+    grad = newgrad
+
+
+def run_layers(layers,
                X_train, Y_train,
                X_test=None, Y_test=None,
                max_epoch=10000,
@@ -183,7 +186,7 @@ def run_layers(layers,
   for j in range(1, max_epoch):
     for k in range(num_batches):
       train_start = math.floor(k*train_batch_size)
-      if k == num_batches -1:
+      if k == num_batches - 1:
         train_end = X_train.shape[0]
       else:
         train_end = math.floor(k*train_batch_size+train_batch_size-1)
@@ -193,20 +196,23 @@ def run_layers(layers,
       backward_layers(layers, h, y, epoch=j)
       counter += 1
     # run the layers forward on the test data
-    if not X_test is None:
+    if X_test is not None:
       error_data_test = forward_calc_error(layers, X_test, Y_test, error_data_test, j)
-    
+
     # run the layers forward on the train data
     error_data = forward_calc_error(layers, X_train, Y_train, error_data, j)
 
-    if j > 1 and abs(error_data[-2]['obj_func'] - error_data[-1]['obj_func'] ) < error_exit:
+    if j > 1 and abs(error_data[-2]['obj_func'] - error_data[-1]['obj_func']) < error_exit:
       logging.info(f"error_data term met after {j} delta value: {error_data[-2]['obj_func'] - error_data[-1]['obj_func']}")
       break
     if j > 1 and j % 100 == 0:
-      logging.debug(f"running j: {j} delta value: {error_data[-2]['obj_func'] - error_data[-1]['obj_func']}")    # run training layers backwards
+      logging.debug(
+          f"running j: {j} delta value: "
+          f"{error_data[-2]['obj_func'] - error_data[-1]['obj_func']}")  # run training layers backwards
   return error_data, error_data_test
 
-def run_plot_epoch_J(layers, 
+
+def run_plot_epoch_J(layers,
                       X_train, Y_train,
                       X_test=None, Y_test=None,
                       max_epoch=10000,
@@ -243,7 +249,7 @@ def run_plot_epoch_J(layers,
       The objective history is saved as an image rather than returned.
   """
 
-  error_data, error_data_test = run_layers(layers, 
+  error_data, error_data_test = run_layers(layers,
                X_train, Y_train,
                X_test, Y_test,
                max_epoch=max_epoch,
@@ -269,8 +275,8 @@ def run_plot_epoch_J(layers,
   # plot test and train RMSE
   fig = plt.figure()
   ax = fig.add_subplot()
-  ax.plot(index , obj_func, label="Log Loss training")
-  ax.plot(index_test , obj_func_test, label="Log Loss test")
+  ax.plot(index, obj_func, label="Log Loss training")
+  ax.plot(index_test, obj_func_test, label="Log Loss test")
   ax.set_ylabel('obj func')
   ax.set_xlabel('epoch')
   ax.legend()
@@ -279,6 +285,7 @@ def run_plot_epoch_J(layers,
   plt.clf()
   plt.cla()
   plt.close()
+
 
 def one_hot_encode(Y):
   """One-hot encode a vector of integer class labels.
@@ -295,7 +302,8 @@ def one_hot_encode(Y):
       ``n_classes`` is the number of unique labels in ``Y``.
   """
   unqiue_classes = np.unique(Y)
-  return multi_class_target_conv(Y, len(unqiue_classes) )
+  return multi_class_target_conv(Y, len(unqiue_classes))
+
 
 def multi_class_target_conv(Y, num_classes):
   """Convert integer class labels into a one-hot encoded matrix.
@@ -313,10 +321,11 @@ def multi_class_target_conv(Y, num_classes):
   numpy.ndarray
       One-hot encoded matrix with shape ``(n_samples, num_classes)``.
   """
-  mat = np.zeros((len(Y),num_classes))
+  mat = np.zeros((len(Y), num_classes))
   for i in range(len(Y)):
     mat[i][Y[i]] = 1
   return mat
+
 
 def calc_acc_prec_rec(Y_true, Y_pred):
   """Compute and print accuracy, precision, and recall for binary labels.
@@ -336,10 +345,10 @@ def calc_acc_prec_rec(Y_true, Y_pred):
   """
   correct_pred = np.count_nonzero(Y_true == Y_pred)
   accuracy = (correct_pred)/(len(Y_true))
-  tp = 0 
-  tn = 0 
-  fp = 0 
-  fn = 0 
+  tp = 0
+  tn = 0
+  fp = 0
+  fn = 0
   for i in range(len(Y_true)):
     if Y_true[i] == 1 and Y_pred[i] == 1:
       tp += 1
@@ -352,12 +361,13 @@ def calc_acc_prec_rec(Y_true, Y_pred):
   try:
     precision = tp/(tp+fp)
   except ZeroDivisionError:
-    precision = 0.0 
+    precision = 0.0
   try:
     recall = tp/(tp+fn)
   except ZeroDivisionError:
     recall = 0.0
   print(f"accuracy {accuracy} precision {precision} recall {recall}")
+
 
 def RNN_forward(layers, x):
   """Forward propagate a single time step of a recurrent network.
@@ -379,18 +389,19 @@ def RNN_forward(layers, x):
   """
   h = x
   for i in range(len(layers)-1):
-    if(isinstance(layers[i], RecurrentFcLayer)):
+    if (isinstance(layers[i], RecurrentFcLayer)):
       # Don't update h, for reccurent layer
       layers[i].forward(h)
       continue
     h = layers[i].forward(h)
 
-    if (((i+2) < len(layers) -1 )and
+    if (((i+2) < len(layers) - 1) and
           isinstance(layers[i+2], RecurrentFcLayer)):
-      # this layers output should be summed with the 
+      # this layers output should be summed with the
       # previous reccurent layer
       h = h + layers[i+2].getPrevOut()
   return h
+
 
 def reccurent_call(t, layer_hist, grad, djdw,  djdu, djdwb=0, djdub=0):
     """Recursively accumulate recurrent weight gradients back through time.
@@ -427,14 +438,15 @@ def reccurent_call(t, layer_hist, grad, djdw,  djdu, djdwb=0, djdub=0):
     if t > 0:
       prev_layer = layer_hist[t-1]
       djdw += (prev_layer[-4].getPrevIn().T @ grad)/grad.shape[0]
-      djdwb += np.sum(grad, axis = 0)/grad.shape[0]
+      djdwb += np.sum(grad, axis=0)/grad.shape[0]
     djdu += (curr_layer[-6].getPrevIn().T @ grad)/grad.shape[0]
-    djdub += np.sum(grad, axis = 0)/grad.shape[0]
+    djdub += np.sum(grad, axis=0)/grad.shape[0]
     grad = curr_layer[-4].backward(grad)
     t -= 1
     return reccurent_call(t, layer_hist, grad, djdw, djdu, djdwb, djdub)
 
-def RNN_backward(layer_hist, 
+
+def RNN_backward(layer_hist,
                  y):
   """Back propagate the objective gradient through a recurrent network.
 
@@ -460,19 +472,19 @@ def RNN_backward(layer_hist,
   djdvb = 0
   djdwb = 0
   djdub = 0
-  grad = 0 
+  grad = 0
   for t in range(len(layer_hist)):
     layer = layer_hist[t]
     y_at_t = y[t]
     h = layer[-2].getPrevOut()
-    djdy = layer[-1].gradient(y_at_t,h)
+    djdy = layer[-1].gradient(y_at_t, h)
     dydh3 = layer[-2].backward(djdy)
     djdv += (layer[-3].getPrevIn().T @ dydh3)/dydh3.shape[0]
-    djdvb += np.sum(dydh3, axis = 0)/dydh3.shape[0]
+    djdvb += np.sum(dydh3, axis=0)/dydh3.shape[0]
     grad = layer[-3].backward(dydh3)
     time = t
-    djdw, djdu, djdwb, djdub = reccurent_call(time, layer_hist, grad, 
-                                              djdw, djdu, 
+    djdw, djdu, djdwb, djdub = reccurent_call(time, layer_hist, grad,
+                                              djdw, djdu,
                                               djdwb=djdwb, djdub=djdub)
     array_sum = np.sum(djdw)
     if np.isnan(array_sum):
@@ -486,7 +498,7 @@ def RNN_backward(layer_hist,
   return np.array(djdv), np.array(djdw), np.array(djdu), np.array(djdvb), np.array(djdwb), np.array(djdub)
 
 
-def validate_input_dims(X_data ):
+def validate_input_dims(X_data):
     """Promote 1-D and 2-D inputs to the 3-D layout used by the RNN helpers.
 
     Parameters
@@ -509,6 +521,7 @@ def validate_input_dims(X_data ):
       X_data = np.array([X_data])
     return X_data
 
+
 def init_RNN_layer(layers, X_data):
   """Reset the carried state of every recurrent layer before a sequence.
 
@@ -528,7 +541,7 @@ def init_RNN_layer(layers, X_data):
   """
   X_data = validate_input_dims(X_data)
   for layer in layers:
-    if (isinstance(layer, RecurrentFcLayer) ):
+    if (isinstance(layer, RecurrentFcLayer)):
       layer.setPrevOut(np.zeros((X_data[:, 0].shape[0],
                   layer.getPrevOut().shape[1])))
   return layers
@@ -549,7 +562,7 @@ def RNN_predict(layers, X_data):
     numpy.ndarray
         Predictions with shape ``(n_series, n_time_steps, n_outputs)``.
     """
-    h =[]
+    h = []
     layers = init_RNN_layer(layers, X_data)
 
     # iterate through each time step
@@ -562,7 +575,7 @@ def RNN_predict(layers, X_data):
     # put the data back into tensor order
     temp_h = []
     for i in range(h.shape[1]):
-      temp_h.append(h[:,i,:])
+      temp_h.append(h[:, i, :])
     h = np.array(temp_h)
     return h
 
@@ -605,7 +618,7 @@ def RNN_train(layers,
 
   j_hist = []
   j_test_hist = []
-    
+
   for i in range(max_epoch):
     fc_grads = []
     layer_hist = []
@@ -631,16 +644,16 @@ def RNN_train(layers,
     # store the objective result for the last time stamp
     # Update the weights
     # start at the last index which is for the first FC layer
-    fc_grad_index = len(fc_grads[0]) -4 
+    fc_grad_index = len(fc_grads[0]) - 4
     for layer in layers:
-      if(isinstance(layer, FullyConnectedLayer) or
-        isinstance(layer, RecurrentFcLayer) ):
+      if (isinstance(layer, FullyConnectedLayer) or
+        isinstance(layer, RecurrentFcLayer)):
         layer.reccurentWeightUpdate(fc_grads[0][fc_grad_index], fc_grads[0][fc_grad_index+3])
         fc_grad_index -= 1
 
     if fc_grad_index != -1:
-      logging.warning(f"something went wrong this index should be -1")
-    if X_test.any() != None and Y_test.any() != None:
+      logging.warning("something went wrong this index should be -1")
+    if X_test.any() is not None and Y_test.any() is not None:
       h_test = RNN_predict(layers, X_test)
       epoc_j_hist_test = []
       for i in range(h_test.shape[0]):
@@ -649,7 +662,7 @@ def RNN_train(layers,
       j_test_hist.append(np.mean(epoc_j_hist_test))
 
       for layer in layers:
-        if(isinstance(layer, RecurrentFcLayer)):
+        if (isinstance(layer, RecurrentFcLayer)):
           # Time series is complete, re-initialize reccurrent FC layer
           layer.setPrevOut(np.zeros(layer.getPrevOut().shape))
 
@@ -659,7 +672,7 @@ def RNN_train(layers,
   plt.ylabel("least squares J")
   plt.legend()
   plt.savefig("project learn rate")
-  if plotname: 
+  if plotname:
     plt.show()
   plt.clf()
   plt.cla()

@@ -28,6 +28,10 @@ lint:
 docs:
 	@uv run --group docs sphinx-build -b html docs docs/_build/html
 
+# Preview the next semantic release without changing any files, commits, or tags
+release-check:
+	@uv run --group release semantic-release -v --noop version
+
 # Remove build artifacts, the virtual environment, and caches
 clean:
 	@rm -rf build dist *.egg-info .venv docs/_build \

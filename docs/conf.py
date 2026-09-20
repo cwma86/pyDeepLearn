@@ -18,8 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "pyDeepLearn"
 copyright = "2022, Cory W. Mauer"
 author = "Cory W. Mauer"
-release = "1.0"
-version = "1.0"
+
+# These two values are rewritten in place by python-semantic-release (see the
+# `version_variables` setting in pyproject.toml) whenever a release is cut, so
+# they must stay valid SemVer strings with no interpolation.
+release = "1.0.0"
+version = "1.0.0"
 
 # -- General configuration ---------------------------------------------------
 

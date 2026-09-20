@@ -1,26 +1,17 @@
 import logging
-import numpy as np 
+import numpy as np
 import os
-import sys
 import unittest
 
-from pyDeepLearn.tests.test_utils import np_array_comp
 
-from pyDeepLearn.RunUtilities import RNN_backward
-from pyDeepLearn.RunUtilities import RNN_forward
 from pyDeepLearn.RunUtilities import RNN_train
 from pyDeepLearn.RunUtilities import RNN_predict
-from pyDeepLearn.RunUtilities import run_layers
-from pyDeepLearn.RunUtilities import test_train_split
-from pyDeepLearn.InputLayer import InputLayer
 from pyDeepLearn.FullyConnectedLayer import FullyConnectedLayer
 from pyDeepLearn.FullyConnectedLayer import RecurrentFcLayer
 from pyDeepLearn.LinearLayer import LinearLayer
-from pyDeepLearn.SigmoidLayer import SigmoidLayer
-from pyDeepLearn.LogLoss import LogLoss
 from pyDeepLearn.LeastSquares import LeastSquares
 
-test_dir_path = os.path.dirname(os.path.abspath( __file__ ))
+test_dir_path = os.path.dirname(os.path.abspath(__file__))
 test_data_path = os.path.join(test_dir_path, 'test_data', 'test_data.csv')
 
 logging.basicConfig(
@@ -28,6 +19,7 @@ logging.basicConfig(
                    '[%(filename)s:%(lineno)d] %(message)s',
             datefmt='%Y-%m-%d:%H:%M:%S',
             level=logging.INFO)
+
 
 class TestRunUtilities(unittest.TestCase):
     # def test_test_train_split(self):
@@ -62,7 +54,7 @@ class TestRunUtilities(unittest.TestCase):
     #   L3 = SigmoidLayer(x_train)
     #   L4 = LogLoss()
     #   layers = [L1, L2, L3, L4]
-    #   error_data, error_data_test = run_layers(layers, 
+    #   error_data, error_data_test = run_layers(layers,
     #            x_train, y_train,
     #            x_test, y_test)
     #   expected = np.array([[0.99999974],
@@ -92,19 +84,19 @@ class TestRunUtilities(unittest.TestCase):
     #   Y_train = np.array([[2.0],[ 3.0]
     #                       ])
     #   # L1 = InputLayer(X_train)
-    #   L2 = FullyConnectedLayer(X_train.shape[1], 
+    #   L2 = FullyConnectedLayer(X_train.shape[1],
     #                           2,
     #                           eta=0.008)
     #   L2.setWeights(np.array([[-0.1, 0.8]]))
     #   L2.setBias(np.array([[0.0, 0.0]]))
     #   L3 = LinearLayer(X_train)
-    #   L4 = RecurrentFcLayer(2, 
+    #   L4 = RecurrentFcLayer(2,
     #                            2,
     #                           eta=0.008)
     #   L4.setWeights(np.array([[0.3, 0.7],
     #                           [-0.9, 0.9]]))
     #   L4.setBias(np.array([[0.0, 0.0]]))
-    #   L5 = FullyConnectedLayer(2, 
+    #   L5 = FullyConnectedLayer(2,
     #                           1,
     #                           eta=0.008)
     #   L5.setWeights(np.array([[0.6],
@@ -136,24 +128,24 @@ class TestRunUtilities(unittest.TestCase):
                           ]])
       Y_train = np.array([[
                           [2.0],
-                          [ 3.0]
+                          [3.0]
                           ]])
 
       # L1 = InputLayer(X_train)
-      U = FullyConnectedLayer(X_train.shape[2], 
+      U = FullyConnectedLayer(X_train.shape[2],
                               Y_train.shape[1],
                               eta=0.008)
       U.setWeights(np.array([[-0.1, 0.8]]))
       U.setBias(np.array([[0.0, 0.0]]))
       L1 = LinearLayer()
-      W = RecurrentFcLayer(Y_train.shape[1], 
+      W = RecurrentFcLayer(Y_train.shape[1],
                            Y_train.shape[1],
                               eta=0.008)
       W.setWeights(np.array([[0.3, 0.7],
                               [-0.9, 0.9]]))
       W.setBias(np.array([[0.0, 0.0]]))
       V = FullyConnectedLayer(Y_train.shape[1],
-                              Y_train.shape[1], 
+                              Y_train.shape[1],
                               eta=0.008)
       V.setWeights(np.array([[0.6],
                               [0.9]]))
@@ -161,7 +153,7 @@ class TestRunUtilities(unittest.TestCase):
       L4 = LinearLayer()
       L5 = LeastSquares()
       layers = [U, L1, W, V, L4, L5]
-      RNN_train( 
+      RNN_train(
               layers,
               X_train,
               Y_train,
@@ -186,20 +178,19 @@ class TestRunUtilities(unittest.TestCase):
                           ]])
       print(f"X_train.shape { X_train[0].shape}")
 
-      L0 = InputLayer( X_train[0])
-      U = FullyConnectedLayer( X_train[0].shape[1], 
+      U = FullyConnectedLayer(X_train[0].shape[1],
                               X_train[0].shape[1],
                               eta=0.001)
       # U.setWeights(np.array([[-0.1, 0.8]]))
       # U.setBias(np.array([[0.0, 0.0]]))
       L1 = LinearLayer()
-      W = RecurrentFcLayer(X_train[0].shape[1], 
+      W = RecurrentFcLayer(X_train[0].shape[1],
                            X_train[0].shape[1],
                               eta=0.001)
       # W.setWeights(np.array([[0.3, 0.7],
       #                         [-0.9, 0.9]]))
       # W.setBias(np.array([[0.0, 0.0]]))
-      V = FullyConnectedLayer(X_train[0].shape[1], 
+      V = FullyConnectedLayer(X_train[0].shape[1],
                               Y_train[0].shape[1],
                               eta=0.001)
       # V.setWeights(np.array([[0.6],
@@ -207,7 +198,7 @@ class TestRunUtilities(unittest.TestCase):
       # V.setBias(np.array([[0.0]]))
       L4 = LinearLayer()
       L5 = LeastSquares()
-      layers = [ U, L1, W, V, L4, L5]
+      layers = [U, L1, W, V, L4, L5]
       RNN_train(layers,
                       X_train,
                       Y_train,
@@ -222,6 +213,7 @@ class TestRunUtilities(unittest.TestCase):
 
       h = RNN_predict(layers, np.array([[4.0]]))
       print(f"prediction {h}")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ import math
 import numpy as np
 from pyDeepLearn.LayerInterface import Layer
 
+
 class SoftmaxLayer(Layer):
   """Layer applying the softmax activation function.
 
@@ -20,6 +21,7 @@ class SoftmaxLayer(Layer):
   __prevOut : numpy.ndarray
       Output data produced during the most recent forward pass.
   """
+
   def __init__(self, dataIn):
     """Initialize the layer.
 
@@ -30,7 +32,6 @@ class SoftmaxLayer(Layer):
         the value is not used.
     """
     super().__init__()
-
 
   def forward(self, dataIn):
     """Apply the softmax activation to each row of ``dataIn``.
@@ -59,24 +60,23 @@ class SoftmaxLayer(Layer):
       logging.error(f"invalid input data matrix dimensions {dataIn.ndim }")
       raise TypeError
     self.setPrevIn(dataIn)
-    
+
     # Calc the exp value (e^x) for each value in the input matrix
     exp_mat = np.zeros(dataIn.shape)
-    for i in range(dataIn.shape[0]): # each row
-      for j in range(dataIn.shape[1]): # each value in the row
+    for i in range(dataIn.shape[0]):  # each row
+      for j in range(dataIn.shape[1]):  # each value in the row
         exp_mat[i][j] = math.exp(dataIn[i][j])
 
     # Create a matrix of each rows summed value
     exp_sums = np.sum(exp_mat, axis=1)
 
-    # Calculate the soft max values 
+    # Calculate the soft max values
     output_mat = np.zeros(exp_mat.shape)
     for i in range(exp_mat.shape[0]):
       for j in range(exp_mat.shape[1]):
         output_mat[i][j] = exp_mat[i][j]/exp_sums[i]
     self.setPrevOut(output_mat)
     return output_mat
-
 
   def gradient(self):
     """Return the per-observation Jacobian of the softmax activation.
@@ -95,10 +95,10 @@ class SoftmaxLayer(Layer):
       for i in range(self.getPrevOut().shape[1]):
         for j in range(self.getPrevOut().shape[1]):
           if i == j:
-            #calc diag
+            # calc diag
             dk[k][i][j] = self.getPrevOut()[k][j]*(1-self.getPrevOut()[k][j])
           else:
-            #calc off diag
+            # calc off diag
             dk[k][i][j] = -1 * self.getPrevOut()[k][i] * self.getPrevOut()[k][j]
             dk[k][j][i] = dk[k][i][j]
     return dk

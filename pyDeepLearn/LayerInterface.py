@@ -9,6 +9,8 @@ from abc import ABC, abstractmethod
 import logging
 import numpy as np
 import sys
+
+
 class Layer(ABC):
   """Abstract base class for a single layer in a neural network.
 
@@ -25,11 +27,12 @@ class Layer(ABC):
   __prevOut : numpy.ndarray
       Output data produced by the layer during the most recent forward pass.
   """
+
   def __init__(self):
     """Initialize the cached previous input and output to empty lists."""
     self.__prevIn = []
     self.__prevOut = []
-  
+
   def setPrevIn(self, dataIn):
     """Store the input data used by the most recent forward pass.
 
@@ -38,8 +41,8 @@ class Layer(ABC):
     dataIn : numpy.ndarray
         Input data supplied to the layer.
     """
-    self.__prevIn= dataIn
-  
+    self.__prevIn = dataIn
+
   def setPrevOut(self, out):
     """Store the output produced by the most recent forward pass.
 
@@ -48,7 +51,7 @@ class Layer(ABC):
     out : numpy.ndarray
         Output data produced by the layer.
     """
-    self.__prevOut= out
+    self.__prevOut = out
 
   def getPrevIn(self):
     """Return the input data cached by the most recent forward pass.
@@ -59,7 +62,7 @@ class Layer(ABC):
         The previously supplied input data.
     """
     return self.__prevIn
-  
+
   def getPrevOut(self):
     """Return the output data cached by the most recent forward pass.
 
@@ -69,7 +72,7 @@ class Layer(ABC):
         The previously produced output data.
     """
     return self.__prevOut
-  
+
   def backward(self, gradIn):
     """Back propagate an incoming gradient through this layer.
 
@@ -90,18 +93,18 @@ class Layer(ABC):
     """
     sg = self.gradient()
     try:
-      grad = np.zeros((gradIn.shape[0],sg.shape[2]))
-      for n in range(gradIn.shape[0]): #compute for each observation in batch
-        grad[n,:] = gradIn[n,:]@sg[n,:,:]
+      grad = np.zeros((gradIn.shape[0], sg.shape[2]))
+      for n in range(gradIn.shape[0]):  # compute for each observation in batch
+        grad[n, :] = gradIn[n, :]@sg[n, :, :]
 
     except IndexError:
-      logging.error(f"Invalid shape")
+      logging.error("Invalid shape")
       logging.info(f"gradIn.shape {gradIn.shape} sg.shape {sg.shape}")
       sys.exit(1)
     except RuntimeWarning:
-      logging.info(f"Warn!")
+      logging.info("Warn!")
     return grad
-  
+
   @abstractmethod
   def forward(self, dataIn):
     """Apply the layer's transformation to ``dataIn``.
@@ -117,6 +120,7 @@ class Layer(ABC):
         Transformed data with shape ``(n_samples, n_outputs)``.
     """
     pass
+
   @abstractmethod
   def gradient(self, dataIn):
     """Return the layer's local gradient.

@@ -1,8 +1,8 @@
 """Cross entropy objective function for multi-class classification."""
 import logging
-import math
 import numpy as np
 from pyDeepLearn.objectiveFuncInterface import objectiveFuncInterface
+
 
 class CrossEntropy(objectiveFuncInterface):
   """Objective function computing cross entropy for multi-class classification.
@@ -12,6 +12,7 @@ class CrossEntropy(objectiveFuncInterface):
   intended to be paired with a one-hot encoded target and a
   :class:`~pyDeepLearn.SoftmaxLayer.SoftmaxLayer` output.
   """
+
   def eval(self, y, yhat):
     """Evaluate the mean cross entropy for a batch of predictions.
 

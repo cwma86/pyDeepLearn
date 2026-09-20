@@ -8,7 +8,8 @@ predictions. Every objective function in :mod:`pyDeepLearn` (for example
 :class:`objectiveFuncInterface`.
 """
 from abc import ABC, abstractmethod
-import numpy as np
+
+
 class objectiveFuncInterface(ABC):
   """Abstract base class for a deep learning objective (loss) function.
 
@@ -34,6 +35,7 @@ class objectiveFuncInterface(ABC):
         The scalar objective value for the batch.
     """
     pass
+
   @abstractmethod
   def gradient(self, y, yhat):
     """Compute the gradient of the objective with respect to the predictions.
@@ -52,4 +54,3 @@ class objectiveFuncInterface(ABC):
         shape as ``yhat``.
     """
     pass
-

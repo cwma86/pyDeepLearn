@@ -37,4 +37,3 @@ Typical usage::
     ]
     run_layers(layers, X_train, Y_train, max_epoch=100)
 """
-
