@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.0.1 (2026-09-20)
+
+### Bug Fixes
+
+- Fix broken unit tests
+  ([`212ac94`](https://github.com/cwma86/pyDeepLearn/commit/212ac94c267dfa51c5331c9e5c19a0d49bcb7912))
+
+### Documentation
+
+- Fix docs gen.
+  ([`2fb3459`](https://github.com/cwma86/pyDeepLearn/commit/2fb3459983af7ba7c5cfa1927b09b525939e8ac7))
+
+
 ## v1.0.0 (2026-09-20)
 
 ### Documentation
