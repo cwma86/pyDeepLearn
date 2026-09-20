@@ -3,8 +3,18 @@
 # to GitHub Pages from main.
 #
 # One-time repository setup: Settings -> Pages -> Build and deployment ->
-# Source: "GitHub Actions". The configure-pages step below also tries to turn
-# Pages on automatically the first time this workflow runs.
+# Source: "GitHub Actions". Creating a Pages site is an administrative call
+# (POST /repos/{owner}/{repo}/pages) that the default GITHUB_TOKEN is not
+# allowed to make, so configure-pages cannot enable Pages on its own: until the
+# setting above exists, the "Configure GitHub Pages" step fails asking for it.
+# The step passes the optional PAGES_ENABLE_TOKEN secret (a PAT or GitHub App
+# token with admin and Pages write access) as the token, and requests automatic
+# enablement only when that secret is configured.
+#
+# Every action below is pinned to a release that runs on Node.js 24: the
+# GitHub-hosted runners run actions on Node.js 24 and remove Node.js 20 on
+# 2026-09-23, so the older Node.js 20 releases of these actions stop working:
+# https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
 
 name: Documentation
 
@@ -28,9 +38,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
+      # v7 is the newest release line that still publishes a major tag (v8 and
+      # later dropped them) and it already runs on Node.js 24.
+      uses: astral-sh/setup-uv@v7
       with:
         enable-cache: true
         python-version: "3.12"
@@ -39,7 +51,9 @@ jobs:
     - name: Build the API documentation
       run: uv run --group docs sphinx-build -b html docs docs/_build/html
     - name: Upload the generated documentation
-      uses: actions/upload-artifact@v4
+      # v6 is the first release that runs on Node.js 24 by default (v7 only
+      # adds direct single-file uploads, which this workflow does not use).
+      uses: actions/upload-artifact@v6
       with:
         name: docs-html
         path: docs/_build/html/
@@ -63,7 +77,9 @@ jobs:
 
     steps:
     - name: Download the generated documentation
-      uses: actions/download-artifact@v4
+      # v7 is the first release that runs on Node.js 24 by default (v8 mainly
+      # adds an ESM build and fails on digest mismatches).
+      uses: actions/download-artifact@v7
       with:
         name: docs-html
         path: docs/_build/html
@@ -74,14 +90,28 @@ jobs:
       # files by default.
       run: touch docs/_build/html/.nojekyll
     - name: Configure GitHub Pages
-      uses: actions/configure-pages@v5
+      # v6 is the first release that runs on Node.js 24.
+      uses: actions/configure-pages@v6
       with:
-        # Try to enable Pages (Source: "GitHub Actions") if it is not on yet.
-        enablement: true
+        # The admin-capable token is used when it has been configured, the
+        # default token otherwise (it is enough for the metadata lookup).
+        token: ${{ secrets.PAGES_ENABLE_TOKEN || github.token }}
+        # Trying to enable Pages (Source: "GitHub Actions") with the default
+        # GITHUB_TOKEN fails with "Resource not accessible by integration", so
+        # the call is only made when a token that is allowed to create the site
+        # is available; otherwise Pages has to be enabled once in the
+        # repository settings (see the header of this file).
+        enablement: ${{ secrets.PAGES_ENABLE_TOKEN != '' }}
     - name: Upload the Pages artifact
-      uses: actions/upload-pages-artifact@v3
+      # v5 archives and uploads with actions/upload-artifact@v7.0.0, which runs
+      # on Node.js 24; v4 still used the Node.js 20 upload-artifact@v4.
+      # include-hidden-files keeps the .nojekyll file created above instead of
+      # dropping it together with the other dot files (the default).
+      uses: actions/upload-pages-artifact@v5
       with:
         path: docs/_build/html
+        include-hidden-files: true
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      # v5 is the first release that runs on Node.js 24.
+      uses: actions/deploy-pages@v5

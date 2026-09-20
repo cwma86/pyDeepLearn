@@ -222,7 +222,13 @@ uv run --group docs sphinx-build -b html docs docs/_build/html
 The `docs.yml` workflow builds the same HTML for every pull request (attached to
 the run as the `docs-html` artifact) and publishes it to GitHub Pages on every
 push to `main`. Publishing needs a one-time repository setting: *Settings ->
-Pages -> Build and deployment -> Source: GitHub Actions*.
+Pages -> Build and deployment -> Source: GitHub Actions*. The workflow cannot
+flip that setting itself, because the default `GITHUB_TOKEN` is not allowed to
+create a Pages site (`Resource not accessible by integration`), so the
+`Configure GitHub Pages` step asks for automatic enablement only when the
+optional `PAGES_ENABLE_TOKEN` secret -- a PAT or GitHub App token with admin and
+Pages write access -- is configured. Add that secret (or enable Pages by hand
+once) and the deploy job publishes the generated HTML.
 
 ## Continuous integration
 
