@@ -10,8 +10,9 @@
 #   3. regenerates CHANGELOG.md,
 #   4. runs `uv build` to produce the wheel and sdist,
 #   5. commits the changed files, tags the commit `vX.Y.Z` and pushes both,
-#   6. publishes a GitHub release with the changelog notes and the built
-#      distributions attached.
+#   6. publishes a GitHub release with the changelog notes, and
+#   7. attaches the built wheel and sdist to that release
+#      (`semantic-release publish`).
 #
 # Commits that do not follow the convention (or that only carry `docs:`,
 # `chore:`, `ci:`, `test:`, `style:` prefixes) do not trigger a release.
@@ -84,6 +85,17 @@ jobs:
       # GitHub release by default (the same defaults the official
       # python-semantic-release action relies on).
       run: uv run --group release semantic-release -v version
+    - name: Attach the wheel and sdist to the GitHub release
+      if: steps.release.outputs.released == 'true'
+      env:
+        # The environment variable named by `remote.token` in pyproject.toml.
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # `semantic-release version` builds dist/ with `uv build` and creates the
+      # release, but attaching the artifacts is the job of the publish command:
+      # it uploads everything matching
+      # [tool.semantic_release.publish].dist_glob_patterns (the wheel and the
+      # sdist) to the release for the tag that was just cut.
+      run: uv run --group release semantic-release publish --tag "${{ steps.release.outputs.tag }}"
     - name: Summary
       run: |
         echo "### Semantic release" >> "$GITHUB_STEP_SUMMARY"
@@ -91,6 +103,15 @@ jobs:
         echo "- released: \`${{ steps.release.outputs.released }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "- version: \`${{ steps.release.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
         echo "- tag: \`${{ steps.release.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+        if [ "${{ steps.release.outputs.released }}" = "true" ]; then
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Distributions attached to the release:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for file in dist/*.whl dist/*.tar.gz; do
+            [ -f "$file" ] || continue
+            echo "- \`$(basename "$file")\` ($(du -h "$file" | cut -f1))" >> "$GITHUB_STEP_SUMMARY"
+          done
+        fi
     - name: Upload the distributions
       if: steps.release.outputs.released == 'true'
       # v6 is the first release that runs on Node.js 24 by default.

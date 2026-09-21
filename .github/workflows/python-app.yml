@@ -1,6 +1,7 @@
 # Continuous integration: installs the locked dependencies with uv, lints with
-# flake8, runs the unit test suite on every supported Python version, and
-# verifies that the wheel/sdist can be built.
+# flake8, runs the unit test suite on every supported Python version, and builds
+# the wheel/sdist -- the `package` job also verifies that the wheel installs and
+# passes the test suite it ships, and uploads it as a downloadable artifact.
 #
 # Documentation is built and published by .github/workflows/docs.yml, and
 # releases are cut by .github/workflows/release.yml.
@@ -84,6 +85,10 @@ jobs:
     name: Build distribution
     runs-on: ubuntu-latest
 
+    outputs:
+      # The wheel that this job built, e.g. pydeeplearn-1.2.3-py3-none-any.whl.
+      wheel: ${{ steps.wheel.outputs.name }}
+
     steps:
     - uses: actions/checkout@v5
     - name: Install uv
@@ -92,9 +97,56 @@ jobs:
         enable-cache: true
         python-version: "3.12"
     - name: Build the wheel and sdist
+      # `uv build` runs hatchling (see [build-system] in pyproject.toml) and
+      # writes dist/pydeeplearn-<version>-py3-none-any.whl -- the installable
+      # wheel -- plus the matching source distribution.
       run: uv build
-    - name: Upload the distributions
+    - name: Locate the wheel
+      id: wheel
+      # A fresh checkout starts with an empty dist/, so exactly one wheel is
+      # expected. Failing here is clearer than uploading nothing, and the
+      # outputs let the later steps and the run summary name the file.
+      run: |
+        wheels=(dist/*.whl)
+        if [ "${#wheels[@]}" -ne 1 ] || [ ! -f "${wheels[0]}" ]; then
+          echo "expected exactly one wheel in dist/, found: ${wheels[*]}" >&2
+          exit 1
+        fi
+        echo "wheel=${wheels[0]}" >> "$GITHUB_OUTPUT"
+        echo "name=$(basename "${wheels[0]}")" >> "$GITHUB_OUTPUT"
+    - name: Verify the wheel installs and passes the test suite
+      # The wheel has to stand on its own, so install it into a throwaway
+      # environment outside the checkout -- where `import pyDeepLearn` cannot
+      # silently fall back to the source tree -- and then run the test suite
+      # that ships inside it against the installed copy. A wheel that is
+      # missing modules or test data fails the build here.
+      run: |
+        cd "$RUNNER_TEMP"
+        uv venv --python 3.12 wheel-venv
+        uv pip install --python wheel-venv/bin/python "$GITHUB_WORKSPACE/${{ steps.wheel.outputs.wheel }}"
+        package_dir=$(wheel-venv/bin/python -c "import os, pyDeepLearn; print(os.path.dirname(pyDeepLearn.__file__))")
+        wheel-venv/bin/python -m unittest discover -s "$package_dir"
+    - name: Summarize the built distributions
+      run: |
+        {
+          echo "### Built distributions"
+          echo ""
+          echo "| File | Size | SHA-256 |"
+          echo "| --- | --- | --- |"
+          for file in dist/*.whl dist/*.tar.gz; do
+            [ -f "$file" ] || continue
+            echo "| \`$(basename "$file")\` | $(du -h "$file" | cut -f1) | \`$(sha256sum "$file" | cut -d' ' -f1)\` |"
+          done
+        } >> "$GITHUB_STEP_SUMMARY"
+    - name: Upload the wheel
+      # The wheel on its own, so it can be downloaded without unpacking the
+      # full distribution set.
       # v6 is the first release that runs on Node.js 24 by default.
+      uses: actions/upload-artifact@v6
+      with:
+        name: wheel
+        path: "${{ steps.wheel.outputs.wheel }}"
+    - name: Upload the wheel and sdist
       uses: actions/upload-artifact@v6
       with:
         name: dist

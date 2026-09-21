@@ -11,6 +11,10 @@ SHELL := /bin/bash
 pkg:
 	@uv build
 
+# Build only the wheel into dist/ (what CI uploads as the `wheel` artifact)
+wheel:
+	@uv build --wheel
+
 # Create/refresh the virtual environment and install all dependencies
 # (runtime plus the "dev" and "docs" dependency groups)
 env:

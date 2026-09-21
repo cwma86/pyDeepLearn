@@ -114,3 +114,10 @@ type = "github"
 # commit/tag and to create the GitHub release.
 token = "GH_TOKEN"
 ignore_token_for_push = false
+
+[tool.semantic_release.publish]
+# `semantic-release version` builds these files with `uv build` (see
+# build_command above); the `publish` command in release.yml uploads exactly
+# these patterns to the GitHub release for the tag that was just cut, so the
+# wheel and the sdist are attached to every release.
+dist_glob_patterns = ["dist/*.whl", "dist/*.tar.gz"]
