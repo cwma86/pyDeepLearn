@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "pyDeepLearn"
 # Version is a single source of truth: python-semantic-release stamps it from
 # the Conventional Commit history on every release (see [tool.semantic_release]).
-version = "1.0.0"
+version = "1.0.1"
 description = "A from-scratch NumPy deep learning framework built to investigate the inner workings of ML frameworks"
 readme = "README.md"
 requires-python = ">=3.10"
