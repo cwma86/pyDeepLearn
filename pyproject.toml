@@ -110,9 +110,13 @@ mode = "update"
 
 [tool.semantic_release.remote]
 type = "github"
-# Name of the environment variable holding the token used to push the release
-# commit/tag and to create the GitHub release.
-token = "GH_TOKEN"
+# The token must be given in the `{ env = "..." }` form so that
+# python-semantic-release reads the *value* of $GH_TOKEN. A plain string such as
+# `token = "GH_TOKEN"` is used literally as the token, so every GitHub API call
+# (creating the release) fails with `401 Bad credentials` -- and because that
+# happens *after* the release commit and tag have been pushed, the tag is left
+# without a release and the wheel never reaches the release assets.
+token = { env = "GH_TOKEN" }
 ignore_token_for_push = false
 
 [tool.semantic_release.publish]

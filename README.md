@@ -258,6 +258,7 @@ once) and the deploy job publishes the generated HTML.
 | `python-app.yml` | push / pull request to `main` | flake8, the unit test suite on Python 3.10-3.12, and `uv build`; the built wheel is verified and uploaded as the `wheel` and `dist` artifacts. |
 | `docs.yml` | push / pull request to `main` | builds the Sphinx HTML and publishes it to GitHub Pages from `main`. |
 | `release.yml` | push to `main`, or manual | cuts a semantic release (version stamp, changelog, tag, GitHub release) and attaches the wheel and sdist to it. |
+| `release-assets.yml` | manual | attaches the wheel and sdist to an existing tag's release (backfill or repair). |
 
 ## Releases
 
@@ -277,6 +278,22 @@ The `release.yml` workflow runs on every push to `main` and:
    `semantic-release publish`, which uploads the files matching
    `[tool.semantic_release.publish].dist_glob_patterns` (the wheel and the
    sdist).
+
+The token has to be configured in its environment-variable form:
+
+```toml
+[tool.semantic_release.remote]
+token = { env = "GH_TOKEN" }
+```
+
+That makes python-semantic-release read the *value* of `$GH_TOKEN` (exported by
+the workflow as `secrets.GITHUB_TOKEN`). A plain string such as
+`token = "GH_TOKEN"` is used **literally** as the token, so every API call that
+creates the release fails with `401 Bad credentials` -- and because that happens
+*after* the release commit and tag have been pushed, the tag is left without a
+release and the wheel has nothing to be attached to. `release.yml` therefore
+checks the token before running semantic-release and verifies afterwards that
+the wheel really became a release asset.
 
 Only these commit types produce a release:
 
@@ -309,6 +326,15 @@ repository and set the repository variable `PUBLISH_TO_PYPI` to `true`
 (*Settings -> Secrets and variables -> Actions -> Variables*). The `publish`
 job then uploads the artifacts that the release job built with `uv publish` --
 no API token or repository secret is required.
+
+### Attaching assets to an existing tag
+
+`release-assets.yml` is a manual workflow (*Actions -> Release assets -> Run
+workflow*) that takes an existing tag, builds the wheel and sdist at that tag,
+and creates -- or updates -- its GitHub release with them attached. It is the
+tool for tags whose release was cut without artifacts, or for repairing a
+release: `gh release upload --clobber` makes re-running it safe. It has to be on
+the default branch before GitHub shows the *Run workflow* button.
 
 ## makefile targets
 

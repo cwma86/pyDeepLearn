@@ -76,6 +76,25 @@ jobs:
         python-version: "3.12"
     - name: Install dependencies
       run: uv sync --group release
+    - name: Verify the GitHub token
+      env:
+        # The environment variable named by `remote.token` in pyproject.toml.
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # A token that cannot be used is only reported by python-semantic-release
+      # *after* it has pushed the release commit and the tag, which leaves a tag
+      # without a release (see the `remote.token` note in pyproject.toml). Check
+      # it up front instead, so nothing is pushed when the token is unusable.
+      run: |
+        if [ -z "${GH_TOKEN}" ]; then
+          echo "GH_TOKEN is empty, python-semantic-release cannot create the release" >&2
+          exit 1
+        fi
+        status=$(curl -sS -o /dev/null -w '%{http_code}' \
+          -H "Authorization: token ${GH_TOKEN}" \
+          -H 'Accept: application/vnd.github+json' \
+          "https://api.github.com/repos/${{ github.repository }}")
+        echo "GitHub API answered HTTP ${status} for the workflow token"
+        [ "${status}" = "200" ]
     - name: Run python-semantic-release
       id: release
       env:
@@ -96,6 +115,29 @@ jobs:
       # [tool.semantic_release.publish].dist_glob_patterns (the wheel and the
       # sdist) to the release for the tag that was just cut.
       run: uv run --group release semantic-release publish --tag "${{ steps.release.outputs.tag }}"
+    - name: Verify the wheel is attached to the release
+      if: steps.release.outputs.released == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # `semantic-release publish` only logs a warning when it cannot find the
+      # release for the tag, so assert here that the wheel really did become a
+      # release asset instead of exiting successfully with nothing attached.
+      run: |
+        curl -sS -H "Authorization: token ${GH_TOKEN}" \
+          -H 'Accept: application/vnd.github+json' \
+          -o /tmp/release.json \
+          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.release.outputs.tag }}"
+        python3 - <<'PY'
+        import json
+
+        with open("/tmp/release.json") as handle:
+          release = json.load(handle)
+
+        assets = [asset["name"] for asset in release.get("assets", [])]
+        print("release assets:", *assets or ["(none)"])
+        if not any(name.endswith(".whl") for name in assets):
+          raise SystemExit("no wheel attached to the release")
+        PY
     - name: Summary
       run: |
         echo "### Semantic release" >> "$GITHUB_STEP_SUMMARY"
